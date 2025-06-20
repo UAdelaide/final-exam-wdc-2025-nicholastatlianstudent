@@ -147,7 +147,7 @@ app.get('/api/walkrequests/open', (req, res) => {
     });
 });
 
-app.get('/api/walkers/summary', (req, res) => {
+app.get('/api/walkrequests/summary', (req, res) => {
     db.query(`
         SELECT
             u.username AS walker_username,
