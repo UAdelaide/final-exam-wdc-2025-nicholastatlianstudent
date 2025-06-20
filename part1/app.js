@@ -148,6 +148,8 @@ app.get('/api/walkrequests/open', (req, res) => {
 });
 
 
+
+
 app.use(express.static(path.join(__dirname, 'public')));
 
 
