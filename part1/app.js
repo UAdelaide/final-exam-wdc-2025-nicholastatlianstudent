@@ -117,18 +117,19 @@ app.use('/', indexRouter);
 app.use('/users', usersRouter);
 
   // Route to return books as JSON
-app.get('/api/dogs', async (req, res) => {
-  try {
-    const [results] = await db.query(`
-      SELECT Dogs.name AS dog_name, Dogs.size, Users.username AS owner_username
-      FROM Dogs
-      JOIN Users ON Dogs.owner_id = Users.user_id
-    `);
+app.get('/api/dogs', (req, res) => {
+  const sql = `
+    SELECT Dogs.name AS dog_name, Dogs.size, Users.username AS owner_username
+    FROM Dogs
+    JOIN Users ON Dogs.owner_id = Users.user_id
+  `;
+  db.query(sql, (err, results) => {
+    if (err) {
+      console.error('Error fetching dogs:', err);
+      return res.status(500).json({ error: 'Failed to fetch dogs' });
+    }
     res.json(results);
-  } catch (err) {
-    console.error('Error fetching dogs:', err);
-    res.status(500).json({ error: 'Failed to fetch dogs' });
-  }
+  });
 });
 
 app.use(express.static(path.join(__dirname, 'public')));
