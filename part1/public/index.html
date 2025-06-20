@@ -54,5 +54,34 @@
       <button class="refresh-button" @click="loadDog">SEE ANOTHER DOG (10 CLICKS NEEDED)</button>
     </div>
   </div>
+  <script>
+    const { createApp } = Vue;
+    createApp({
+      data() {
+        return {
+          dogImage: '',
+          clickCount: 0
+        };
+      },
+      mounted() {
+        this.loadDog();
+      },
+      methods: {
+        loadDog() {
+          this.clickCount++;
+          if (this.clickCount >= 10) {
+            fetch("https://dog.ceo/api/breeds/image/random")
+              .then(res => res.json())
+              .then(data => {
+                this.dogImage = data.message;
+                this.clickCount = 0;
+              });
+          } else {
+            alert(`Click ${10 - this.clickCount} more times to see another dog.`);
+          }
+        }
+      }
+    }).mount("#app");
+  </script>
 </body>
 </html>
