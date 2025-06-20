@@ -38,8 +38,8 @@ app.use(function(err, req, res, next) {
   res.render('error');
 });
 
-// Route to return dogs 
-app.get('/', async (req, res) => {
+// Route to return dogs
+app.get('/dogs', async (req, res) => {
   try {
     const [books] = await db.execute('SELECT * FROM books');
     res.json(books);
