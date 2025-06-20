@@ -148,7 +148,19 @@ app.get('/api/walkrequests/open', (req, res) => {
 });
 
 app.get('/api/walkrequests/summary', (req, res) => {
-    db.query(, (err, results) => {
+    db.query(`
+        SELECT
+            Users.username AS walker_username,
+            COUNT(WalkRatings.rating_id) AS total_ratings,
+            ROUND(AVG(WalkRatings.rating), 1) AS average_rating,
+            COUNT(DISTINCT WalkRequests.request_id) AS completed_walks
+        FROM Users
+        LEFT JOIN WalkApplications ON Users.user_id = WalkApplications.walker_id AND WalkApplications.status = 'accepted'
+        LEFT JOIN WalkRequests ON WalkApplications.request_id = WalkRequests.request_id AND WalkRequests.status = 'completed'
+        LEFT JOIN WalkRatings ON Users.user_id = WalkRatings.walker_id
+        WHERE Users.role = 'walker'
+        GROUP BY Users.user_id
+    `, (err, results) => {
         if (err) {
             console.error(err);
             return res.status(500).json({ error: 'Failed to fetch open walk requests' });
