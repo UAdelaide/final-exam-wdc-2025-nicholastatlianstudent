@@ -72,7 +72,7 @@ app.use('/', indexRouter);
 app.use('/users', usersRouter);
 
   // Route to return books as JSON
-app.get('/dogs', async (req, res) => {
+app.get('/api/dogs', async (req, res) => {
     db.query('SELECT * FROM Dogs', (err, results) => {
         if (err) {
             console.error(err);
