@@ -10,6 +10,27 @@ var usersRouter = require('./routes/users');
 
 var app = express();
 
+let db;
+
+db = mysql.createConnection({
+  host: 'localhost',
+  user: 'root',
+  password: '',
+  database: 'DogWalkService',
+  multipleStatements: true
+});
+
+db.connect((err) => {
+  if (err) {
+    console.error('❌ Error connecting to database:', err);
+    return;
+  }
+  console.log('✅ Connected to MySQL');
+
+  // Seed the database after successful connection
+  seedDatabase();
+});
+
 
 
 // view engine setup
