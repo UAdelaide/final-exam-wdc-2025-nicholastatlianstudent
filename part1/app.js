@@ -147,7 +147,7 @@ app.get('/api/walkrequests/open', (req, res) => {
     });
 });
 
-app.get('/api/walkrequests/summary', (req, res) => {
+app.get('/api/walkers/summary', (req, res) => {
     db.query(`
         SELECT
             u.username AS walker_username,
@@ -166,7 +166,7 @@ app.get('/api/walkrequests/summary', (req, res) => {
     `, (err, results) => {
         if (err) {
             console.error(err);
-            return res.status(500).json({ error: 'Failed to fetch open walk requests' });
+            return res.status(500).json({ error: 'Failed to fetch walker summary' });
         }
         res.json(results);
     });
