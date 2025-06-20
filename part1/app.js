@@ -73,7 +73,7 @@ app.use('/users', usersRouter);
 
   // Route to return books as JSON
 app.get('/dogs', async (req, res) => {
-    db.query('SELECT Dogs.dog_id, Dogs.name, Dogs.size FROM Dogs', (err, results) => {
+    db.query('SELECT * FROM Dogs', (err, results) => {
         if (err) {
             console.error(err);
             return res.status(500).json({ error: 'Failed to fetch Dogs' });
