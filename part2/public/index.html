@@ -34,11 +34,42 @@
 
   <script>
     const { createApp } = Vue;
+
     createApp({
       data() {
         return {
-          message: 'Welcome to the Dog Walking Service!'
+          message: 'Welcome to the Dog Walking Service!',
+          username: '',
+          password: '',
+          error: ''
         };
+      },
+      methods: {
+        login() {
+          // Simulated login data
+          const users = {
+            'ownerJane': { role: 'owner', password: 'password123' },
+            'walkerBob': { role: 'walker', password: 'walkerdog' }
+          };
+
+          const user = users[this.username];
+
+          if (!user || user.password !== this.password) {
+            this.error = 'Invalid username or password.';
+            return;
+          }
+
+          // Store login session
+          sessionStorage.setItem('username', this.username);
+          sessionStorage.setItem('role', user.role);
+
+          // Redirect based on role
+          if (user.role === 'owner') {
+            window.location.href = 'owner-dashboard.html';
+          } else if (user.role === 'walker') {
+            window.location.href = 'walker-dashboard.html';
+          }
+        }
       }
     }).mount('#app');
   </script>
