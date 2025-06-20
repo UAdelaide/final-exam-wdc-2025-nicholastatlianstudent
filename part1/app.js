@@ -115,7 +115,7 @@ app.use(express.static(path.join(__dirname, 'public')));
 app.use('/', indexRouter);
 app.use('/users', usersRouter);
 
-app.get('/dogs', async (req, res) => {
+app.get('/api/dogs', async (req, res) => {
     db.query('SELECT Dogs.dog_id, Dogs.name, Dogs.size FROM Dogs', (err, results) => {
         if (err) {
             console.error(err);
