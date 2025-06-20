@@ -126,7 +126,7 @@ app.get('/api/dogs', async (req, res) => {
 });
 
 app.get('api/walkrequests/open', async (req, res) => {
-  db.query('SELECT WALKE')
+  db.query('SELECT WalkRequests.')
 })
 
 
