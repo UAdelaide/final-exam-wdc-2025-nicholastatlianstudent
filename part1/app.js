@@ -116,15 +116,43 @@ app.use('/', indexRouter);
 app.use('/users', usersRouter);
 
 app.get('/api/dogs', async (req, res) => {
-    db.query('SELECT Dogs.dog_id, Dogs.name, Dogs.size FROM Dogs', (err, results) => {
-        if (err) {
-            console.error(err);
-            return res.status(500).json({ error: 'Failed to fetch Dogs' });
-        }
-        res.json(results);
-    });
+  try {
+    const results = await query(`
+      SELECT
+        Dogs.name AS dog_name,
+        Dogs.size,
+        Users.username AS owner_username
+      FROM Dogs
+      JOIN Users ON Dogs.owner_id = Users.user_id
+    `);
+    res.json(results);
+  } catch (err) {
+    console.error('Error fetching dogs:', err);
+    res.status(500).json({ error: 'Failed to fetch dogs' });
+  }
 });
 
+app.get('/api/walkrequests/open', async (req, res) => {
+  try {
+    const results = await query(`
+      SELECT
+        WalkRequests.request_id,
+        Dogs.name AS dog_name,
+        WalkRequests.requested_time,
+        WalkRequests.duration_minutes,
+        WalkRequests.location,
+        Users.username AS owner_username
+      FROM WalkRequests
+      JOIN Dogs ON WalkRequests.dog_id = Dogs.dog_id
+      JOIN Users ON Dogs.owner_id = Users.user_id
+      WHERE WalkRequests.status = 'open'
+    `);
+    res.json(results);
+  } catch (err) {
+    console.error('Error fetching open walk requests:', err);
+    res.status(500).json({ error: 'Failed to fetch open requests' });
+  }
+});
 
 
 
