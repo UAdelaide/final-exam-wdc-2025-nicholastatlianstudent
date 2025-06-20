@@ -116,16 +116,17 @@ app.use('/', indexRouter);
 app.use('/users', usersRouter);
 
 app.get('/api/dogs', async (req, res) => {
-  console.log('GET /api/dogs');
-
-  try {
-    const results = await query(`SELECT ...`);
-    res.json(results);
-  } catch (err) {
-    console.error('DB error:', err);
-    res.status(500).json({ error: 'Failed to fetch dogs' });
-  }
+    db.query('SELECT Dogs.dog_id, Dogs.name, Dogs.size FROM Dogs', (err, results) => {
+        if (err) {
+            console.error(err);
+            return res.status(500).json({ error: 'Failed to fetch Dogs' });
+        }
+        res.json(results);
+    });
 });
+
+
+
 
 app.use(express.static(path.join(__dirname, 'public')));
 
