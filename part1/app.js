@@ -115,7 +115,7 @@ function seedDatabase() {
         db.query(insertWalksSQL, (err) => {
           if (err) return console.error('Error inserting walk requests:', err);
 
-          // ✅ Insert WalkApplications
+          // Insert WalkApplications
           const insertApplicationsSQL = `
             INSERT IGNORE INTO WalkApplications (request_id, walker_id, status) VALUES
             (
