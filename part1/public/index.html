@@ -7,16 +7,13 @@
     <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
     <style>
     body {
-      background: linear-gradient(to right, red, blue);
-      color: yellow;
-      font-family: Comic Sans MS, cursive;
-      animation: flash 0.3s infinite alternate;
-    }
+  animation: flash 0.2s infinite alternate;
+}
 
-    @keyframes blink {
-      from { background-color: black; }
-      to { background-color: white; }
-    }
+@keyframes flash {
+  from { background-color: red; }
+  to { background-color: blue; }
+}
 
     .dog-container {
       margin: 50px;
