@@ -7,6 +7,18 @@
     <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
 </head>
 <body>
-    
+    <div id="app">
+    <div class="dog-container">
+      <h1>DOG OF THE DAY 🐶🐾🐕‍🦺🐩</h1>
+      <img :src="dogImage" width="600" height="400">
+      <p class="details">
+        Name: Mr. Barkface<br>
+        Age: Unknown<br>
+        Breed: Mystery Mix<br>
+        Favorite Snack: 🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥
+      </p>
+      <button class="refresh-button" @click="loadDog">SEE ANOTHER DOG (10 CLICKS NEEDED)</button>
+    </div>
+  </div>
 </body>
 </html>
