@@ -125,10 +125,15 @@ app.get('/api/dogs', async (req, res) => {
     });
 });
 
-app.get('api/walkrequests/open', async (req, res) => {
-  db.query('SELECT Dogs.dog_id, Dogs.name, Dogs.size FROM Dogs', (err, results) => {
-    if ()
-})
+app.get('/api/walkrequests/open', async (req, res) => {
+    db.query('SELECT Dogs.dog_id, Dogs.name, Dogs.size FROM Dogs', (err, results) => {
+        if (err) {
+            console.error(err);
+            return res.status(500).json({ error: 'Failed to fetch Dogs' });
+        }
+        res.json(results);
+    });
+});
 
 
 app.use(express.static(path.join(__dirname, 'public')));
