@@ -22,10 +22,10 @@ db = mysql.createConnection({
 
 db.connect((err) => {
   if (err) {
-    console.error('❌ Error connecting to database:', err);
+    console.error('Error connecting to database:', err);
     return;
   }
-  console.log('✅ Connected to MySQL');
+  console.log('Connected to MySQL');
 
   // Seed the database after successful connection
   seedDatabase();
@@ -62,7 +62,7 @@ function seedDatabase() {
 
   db.query(createTablesSQL, (err) => {
     if (err) {
-      console.error('❌ Error creating tables:', err);
+      console.error('Error creating tables:', err);
       return;
     }
 
@@ -96,7 +96,7 @@ function seedDatabase() {
 
         db.query(insertWalksSQL, (err) => {
           if (err) return console.error('Error inserting walk requests:', err);
-          console.log('✅ Database seeded.');
+          console.log('Database seeded.');
         });
       });
     });
