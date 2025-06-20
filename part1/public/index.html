@@ -5,6 +5,40 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Dog of the Day</title>
     <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+    <style>
+    body {
+      background: linear-gradient(to right, red, blue);
+      color: yellow;
+      font-family: Comic Sans MS, cursive;
+      animation: blink 0.3s infinite alternate;
+    }
+
+    @keyframes blink {
+      from { background-color: black; }
+      to { background-color: white; }
+    }
+
+    .dog-container {
+      margin: 50px;
+      text-align: center;
+      border: 5px dashed magenta;
+      padding: 20px;
+    }
+
+    .refresh-button {
+      font-size: 2rem;
+      background: lime;
+      color: purple;
+      padding: 20px 50px;
+      border-radius: 40px;
+      cursor: none; /* user doesn't see pointer */
+    }
+
+    .details {
+      font-size: 1.2rem;
+      text-shadow: 2px 2px 4px black;
+    }
+  </style>
 </head>
 <body>
     <div id="app">
