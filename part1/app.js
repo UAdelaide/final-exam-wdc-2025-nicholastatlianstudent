@@ -38,7 +38,7 @@ app.use(function(err, req, res, next) {
   res.render('error');
 });
 
-// Route to return books as JSON
+// Route to return dogs 
 app.get('/', async (req, res) => {
   try {
     const [books] = await db.execute('SELECT * FROM books');
