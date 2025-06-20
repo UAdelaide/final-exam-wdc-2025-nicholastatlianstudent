@@ -210,6 +210,7 @@ function logout(){
     xmlhttp.open("POST", "/users/logout", true);
     xmlhttp.send();
 
-    
+    sessionStorage.clear();
+    window.location.href = "index.html";
 
 }
