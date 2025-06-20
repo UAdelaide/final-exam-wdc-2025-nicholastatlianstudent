@@ -132,7 +132,54 @@ app.get('/api/dogs', (req, res) => {
   });
 });
 
+app.get('/api/walkrequests/open', (req, res) => {
+  const sql = `
+    SELECT
+      WalkRequests.request_id,
+      Dogs.name AS dog_name,
+      WalkRequests.requested_time,
+      WalkRequests.duration_minutes,
+      WalkRequests.location,
+      Users.username AS owner_username
+    FROM WalkRequests
+    JOIN Dogs ON WalkRequests.dog_id = Dogs.dog_id
+    JOIN Users ON Dogs.owner_id = Users.user_id
+    WHERE WalkRequests.status = 'open'
+  `;
 
+  db.query(sql, (err, results) => {
+    if (err) {
+      console.error('Error fetching open walk requests:', err);
+      return res.status(500).json({ error: 'Failed to fetch open walk requests' });
+    }
+    res.json(results);
+  });
+});
+
+app.get('/api/walkers/summary', (req, res) => {
+  const sql = `
+    SELECT
+      Users.username AS walker_username,
+      COUNT(DISTINCT WalkRatings.rating_id) AS total_ratings,
+      ROUND(AVG(WalkRatings.rating), 2) AS average_rating,
+      (
+        SELECT COUNT(*) FROM WalkApplications wa
+        WHERE wa.walker_id = Users.user_id AND wa.status = 'accepted'
+      ) AS completed_walks
+    FROM Users
+    LEFT JOIN WalkRatings ON Users.user_id = WalkRatings.walker_id
+    WHERE Users.role = 'walker'
+    GROUP BY Users.user_id
+  `;
+
+  db.query(sql, (err, results) => {
+    if (err) {
+      console.error('Error fetching walker summary:', err);
+      return res.status(500).json({ error: 'Failed to fetch walker summary' });
+    }
+    res.json(results);
+  });
+});
 
 app.use(express.static(path.join(__dirname, 'public')));
 
