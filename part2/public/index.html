@@ -19,13 +19,13 @@
         <label for="username" class="form-label">Username</label>
         <input v-model="username" type="text" class="form-control form-control-lg bg-warning-subtle" id="username" required>
       </div>
-
+      <!-- Input for the password  -->
       <div class="mb-4">
         <label for="password" class="form-label">Password</label>
         <input v-model="password" type="password" class="form-control form-control-lg bg-warning-subtle" id="password" required>
       </div>
       <button type="submit" class="btn btn-primary btn-lg">Log In</button>
-
+      <!-- Displays message if error  -->
       <div v-if="error" class="mt-3 alert alert-danger">
         {{ error }}
       </div>
