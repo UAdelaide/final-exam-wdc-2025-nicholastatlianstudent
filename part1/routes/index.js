@@ -8,9 +8,9 @@ router.get('/', function(req, res, next) {
 
 /* GET DOGS */
 
-/* GET DOGS */
+/* GET WALK REQUEST OPEN */
 
-/* GET DOGS */
+/* GET WALKERS SUMMARY */
 
 module.exports = router;
 
