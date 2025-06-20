@@ -65,24 +65,6 @@ function seedDatabase() {
       return;
     }
 
-    // Insert sample users
-    const insertUsersSQL = `
-      INSERT IGNORE INTO Users (username, email, password_hash, role) VALUES
-      ('alice123', 'alice@example.com', 'hashed123', 'owner'),
-      ('bobwalker', 'bob@example.com', 'hashed456', 'walker'),
-      ('carol123', 'carol@example.com', 'hashed789', 'owner');
-    `;
-
-    db.query(insertUsersSQL, (err) => {
-      if (err) return console.error('Error inserting users:', err);
-
-      // Insert sample dogs
-      const insertDogsSQL = `
-        INSERT IGNORE INTO Dogs (owner_id, name, size) VALUES
-        ((SELECT user_id FROM Users WHERE username='alice123'), 'Max', 'medium'),
-        ((SELECT user_id FROM Users WHERE username='carol123'), 'Bella', 'small');
-      `;
-
       db.query(insertDogsSQL, (err) => {
         if (err) return console.error('Error inserting dogs:', err);
 
