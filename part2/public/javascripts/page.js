@@ -210,4 +210,6 @@ function logout(){
     xmlhttp.open("POST", "/users/logout", true);
     xmlhttp.send();
 
+    
+
 }
