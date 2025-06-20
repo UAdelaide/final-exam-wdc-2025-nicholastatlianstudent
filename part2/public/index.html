@@ -62,11 +62,11 @@
             return;
           }
 
-          // Store login session
+          // Store the login session in sessionStorage
           sessionStorage.setItem('username', this.username);
           sessionStorage.setItem('role', user.role);
 
-          // Redirect based on role
+          // Redirect based 
           if (user.role === 'owner') {
             window.location.href = 'owner-dashboard.html';
           } else if (user.role === 'walker') {
