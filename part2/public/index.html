@@ -15,6 +15,7 @@
   <!-- Login form that captures the username and password -->
     <form @submit.prevent="login" class="bg-white p-4 rounded shadow-sm" style="max-width: 500px;">
       <div class="mb-3">
+      <!-- Input for the username  -->
         <label for="username" class="form-label">Username</label>
         <input v-model="username" type="text" class="form-control form-control-lg bg-warning-subtle" id="username" required>
       </div>
