@@ -6,5 +6,11 @@ router.get('/', function(req, res, next) {
   res.render('index', { title: 'Express' });
 });
 
+/* GET DOGS */
+
+/* GET DOGS */
+
+/* GET DOGS */
+
 module.exports = router;
 
