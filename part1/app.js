@@ -132,49 +132,6 @@ app.get('/api/dogs', async (req, res) => {
   }
 });
 
-app.get('/api/walkrequests/open', async (req, res) => {
-  try {
-    const results = await query(`
-      SELECT
-        WalkRequests.request_id,
-        Dogs.name AS dog_name,
-        WalkRequests.requested_time,
-        WalkRequests.duration_minutes,
-        WalkRequests.location,
-        Users.username AS owner_username
-      FROM WalkRequests
-      JOIN Dogs ON WalkRequests.dog_id = Dogs.dog_id
-      JOIN Users ON Dogs.owner_id = Users.user_id
-      WHERE WalkRequests.status = 'open'
-    `);
-    res.json(results);
-  } catch (err) {
-    console.error('Error fetching open walk requests:', err);
-    res.status(500).json({ error: 'Failed to fetch open requests' });
-  }
-});
-
-app.get('/api/walkers/summary', async (req, res) => {
-  try {
-    const results = await query(`
-      SELECT
-        u.username AS walker_username,
-        COUNT(r.rating_id) AS total_ratings,
-        ROUND(AVG(r.rating), 1) AS average_rating,
-        COUNT(DISTINCT a.application_id) AS completed_walks
-      FROM Users u
-      LEFT JOIN WalkApplications a ON u.user_id = a.walker_id AND a.status = 'accepted'
-      LEFT JOIN WalkRequests wr ON a.request_id = wr.request_id AND wr.status = 'completed'
-      LEFT JOIN WalkRatings r ON u.user_id = r.walker_id
-      WHERE u.role = 'walker'
-      GROUP BY u.user_id
-    `);
-    res.json(results);
-  } catch (err) {
-    console.error('Error fetching walker summary:', err);
-    res.status(500).json({ error: 'Failed to fetch walker summary' });
-  }
-});
 
 app.use(express.static(path.join(__dirname, 'public')));
 
