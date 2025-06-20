@@ -42,7 +42,7 @@ app.use(function(err, req, res, next) {
 app.get('/dogs', async (req, res) => {
   try {
     const [dog_id] = await db.execute('SELECT * FROM Dogs');
-    res.json(books);
+    res.json(dog_id);
   } catch (err) {
     res.status(500).json({ error: 'Failed to fetch books' });
   }
