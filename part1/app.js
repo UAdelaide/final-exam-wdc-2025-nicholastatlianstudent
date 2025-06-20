@@ -10,8 +10,6 @@ var usersRouter = require('./routes/users');
 
 var app = express();
 
-const mysql = require('mysql2/promise'); // use mysql2 with promise support
-
 let db;
 
 (async () => {
