@@ -125,7 +125,9 @@ app.get('/api/dogs', async (req, res) => {
     });
 });
 
-app.get('api/walkrequests/open')
+app.get('api/walkrequests/open', async (req, res) => {
+  db.query('SELECT ')
+})
 
 
 app.use(express.static(path.join(__dirname, 'public')));
