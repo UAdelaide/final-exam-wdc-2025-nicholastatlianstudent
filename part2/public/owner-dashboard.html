@@ -31,8 +31,8 @@
                 {{ dog.name }} ({{ dog.size }})
               </option>
             </select>
-            <div v-if="dogs.length === 0 && !loadingDogs" class="text-warning mt-2">
-              No dogs found. Using mock data. Please set up the /api/dogs endpoint.
+            <div v-if="usingMockData" class="alert alert-warning mt-2">
+              <small>API endpoint not found - using mock data for demonstration</small>
             </div>
           </div>
           <div class="mb-3">
@@ -53,14 +53,8 @@
     </div>
 
     <!-- Success or error messages -->
-    <div v-if="message" class="alert alert-info alert-dismissible fade show">
-      {{ message }}
-      <button type="button" class="btn-close" @click="message = ''"></button>
-    </div>
-    <div v-if="error" class="alert alert-danger alert-dismissible fade show">
-      {{ error }}
-      <button type="button" class="btn-close" @click="error = ''"></button>
-    </div>
+    <div v-if="message" class="alert alert-info">{{ message }}</div>
+    <div v-if="error" class="alert alert-danger">{{ error }}</div>
 
     <!-- List of walk requests -->
     <h2 class="mb-3">My Walk Requests</h2>
@@ -70,17 +64,11 @@
           <div class="card-body">
             <h5 class="card-title">Request #{{ walk.request_id }}</h5>
             <p class="card-text">
-              <strong>Dog:</strong> {{ walk.dog_name || getDogName(walk.dog_id) }} ({{ walk.size || getDogSize(walk.dog_id) }})<br>
+              <strong>Dog:</strong> {{ getSelectedDogInfo(walk.dog_id) }}<br>
               <strong>Date:</strong> {{ new Date(walk.requested_time).toLocaleString() }}<br>
               <strong>Duration:</strong> {{ walk.duration_minutes }} minutes<br>
               <strong>Location:</strong> {{ walk.location }}<br>
-              <strong>Status:</strong>
-              <span class="badge" :class="{
-                'bg-secondary': walk.status === 'open',
-                'bg-warning': walk.status === 'accepted',
-                'bg-success': walk.status === 'completed',
-                'bg-danger': walk.status === 'cancelled'
-              }">{{ walk.status }}</span>
+              <strong>Status:</strong> {{ walk.status }}
             </p>
           </div>
         </div>
@@ -102,63 +90,64 @@
         });
 
         const walks = ref([]);
-        const dogs = ref([]);
         const message = ref('');
         const error = ref('');
-        const loadingDogs = ref(true);
-
-        // Mock data for testing
-        const mockDogs = [
-          { dog_id: 1, name: "Buddy", size: "medium", owner_id: 1 },
-          { dog_id: 2, name: "Max", size: "large", owner_id: 1 },
-          { dog_id: 3, name: "Luna", size: "small", owner_id: 1 }
-        ];
-
-        async function loadDogs() {
-          loadingDogs.value = true;
-          try {
-            const username = sessionStorage.getItem("username");
-            console.log("Loading dogs for username:", username);
-
-            // Try to fetch from API
-            const res = await fetch('/api/dogs');
-
-            if (!res.ok) {
-              throw new Error(`API not available: ${res.status}`);
-            }
-
-            const data = await res.json();
-            dogs.value = data;
-
-          } catch (err) {
-            console.warn('API not available, using mock data:', err.message);
-            // Use mock data if API fails
-            dogs.value = mockDogs;
-            error.value = 'Note: Using mock dog data. Backend endpoint /api/dogs not found.';
-            setTimeout(() => { error.value = ''; }, 5000);
-          } finally {
-            loadingDogs.value = false;
-          }
-        }
+        const dogs = ref([]); // Initialize empty dogs array
+        const usingMockData = ref(false);
 
         async function loadWalks() {
           try {
             const res = await fetch('/api/walks');
             if (res.ok) {
               walks.value = await res.json();
-            } else {
-              // Use empty array if API fails
-              walks.value = [];
             }
           } catch (err) {
-            console.error('Error loading walks:', err);
-            walks.value = [];
+            console.log('Could not load walks:', err);
+            error.value = 'Failed to load walk requests';
           }
+        }
+
+        async function loadDogs() {
+          try {
+            const username = sessionStorage.getItem("username");
+            console.log("Loading dogs for:", username);
+
+            // First try the API
+            const res = await fetch(`/api/dogs?owner=${username}`);
+
+            if (!res.ok) {
+              throw new Error('API endpoint not found');
+            }
+
+            dogs.value = await res.json();
+            usingMockData.value = false;
+
+          } catch (err) {
+            console.log('API not available, using mock data');
+            // Use mock data when API is not available
+            dogs.value = [
+              { dog_id: 1, name: "Buddy", size: "medium" },
+              { dog_id: 2, name: "Max", size: "large" },
+              { dog_id: 3, name: "Luna", size: "small" },
+              { dog_id: 4, name: "Charlie", size: "medium" }
+            ];
+            usingMockData.value = true;
+          }
+
+          console.log('Dogs loaded:', dogs.value);
         }
 
         async function submitWalkRequest() {
           try {
-            // For testing, if API fails, just show success message
+            // Get selected dog info
+            const selectedDog = dogs.value.find(dog => dog.dog_id === form.value.dog_id);
+            if (!selectedDog) {
+              error.value = 'Please select a dog';
+              return;
+            }
+
+            console.log('Submitting walk request for:', selectedDog.name);
+
             const res = await fetch('/api/walks', {
               method: 'POST',
               headers: { 'Content-Type': 'application/json' },
@@ -166,21 +155,26 @@
             });
 
             if (!res.ok) {
-              // For demo purposes, add to local list
+              // If API fails, create a local walk request for demo
               const newWalk = {
                 request_id: Date.now(),
-                ...form.value,
-                status: 'open',
-                created_at: new Date().toISOString()
+                dog_id: form.value.dog_id,
+                dog_name: selectedDog.name,
+                size: selectedDog.size,
+                requested_time: form.value.requested_time,
+                duration_minutes: form.value.duration_minutes,
+                location: form.value.location,
+                status: 'open'
               };
-              walks.value.push(newWalk);
-              message.value = 'Walk request created (demo mode - backend not connected)';
+              walks.value.unshift(newWalk);
+              message.value = 'Walk request created (demo mode)';
             } else {
               const result = await res.json();
               message.value = result.message || 'Walk request created successfully!';
-              loadWalks();
+              await loadWalks();
             }
 
+            error.value = '';
             // Reset form
             form.value = {
               dog_id: '',
@@ -189,50 +183,31 @@
               location: ''
             };
           } catch (err) {
-            error.value = 'Demo mode: Request saved locally';
-            const newWalk = {
-              request_id: Date.now(),
-              ...form.value,
-              status: 'open',
-              created_at: new Date().toISOString()
-            };
-            walks.value.push(newWalk);
+            error.value = err.message;
+            message.value = '';
           }
         }
 
-        // Helper functions for display
-        function getDogName(dogId) {
+        function getSelectedDogInfo(dogId) {
           const dog = dogs.value.find(d => d.dog_id === dogId);
-          return dog ? dog.name : 'Unknown';
-        }
-
-        function getDogSize(dogId) {
-          const dog = dogs.value.find(d => d.dog_id === dogId);
-          return dog ? dog.size : 'unknown';
+          return dog ? `${dog.name} (${dog.size})` : 'Unknown Dog';
         }
 
         onMounted(() => {
-          const role = sessionStorage.getItem("role");
-          if (role !== "owner") {
-            alert("Access denied. Owners only.");
-            window.location.href = "index.html";
-            return;
-          }
-
-          loadDogs();
+          console.log('Component mounted');
+          loadDogs(); // Load dogs first
           loadWalks();
         });
 
         return {
           form,
           walks,
-          dogs,
           message,
           error,
-          loadingDogs,
+          dogs,
+          usingMockData,
           submitWalkRequest,
-          getDogName,
-          getDogSize
+          getSelectedDogInfo
         };
       }
     }).mount('#app');
@@ -241,6 +216,15 @@
       sessionStorage.clear();
       window.location.href = '/login';
     }
+
+    // Role check
+    window.addEventListener('DOMContentLoaded', () => {
+      const role = sessionStorage.getItem("role");
+      if (role !== "owner") {
+        alert("Access denied. Owners only.");
+        window.location.href = "index.html";
+      }
+    });
   </script>
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
   <script src="javascripts/page.js"></script>
