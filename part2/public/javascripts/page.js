@@ -214,37 +214,3 @@ function logout(){
     window.location.href = "index.html";
 
 }
-
-function populateDogsDropdown() {
-  const username = sessionStorage.getItem("username");
-  if (!username) return;
-
-  // Fetch the list of dogs for the logged-in owner
-  const xmlhttp = new XMLHttpRequest();
-  xmlhttp.onreadystatechange = function () {
-    if (this.readyState === 4 && this.status === 200) {
-      const dogs = JSON.parse(this.responseText);
-      const dogSelect = document.getElementById("dogID");
-
-      // Clear default options
-      dogSelect.innerHTML = "";
-
-      if (dogs.length === 0) {
-        dogSelect.innerHTML = `<option disabled selected>No dogs found</option>`;
-        return;
-      }
-
-      // Populate each dog as an option
-      for (let dog of dogs) {
-        const option = document.createElement("option");
-        option.value = dog.id; // or dog.name if that's preferred
-        option.textContent = dog.name;
-        dogSelect.appendChild(option);
-      }
-    }
-  };
-
-  // Example route: /users/:username/dogs
-  xmlhttp.open("GET", `/users/${username}/dogs`, true);
-  xmlhttp.send();
-}
