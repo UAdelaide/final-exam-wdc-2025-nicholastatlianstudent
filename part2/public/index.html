@@ -12,25 +12,22 @@
   <div id="app" class="container py-5">
     <h1 class="mb-4 text-primary">{{ message }}</h1>
     <p class="lead">Connect with trusted walkers for your beloved dog!</p>
-  <!-- Login form that captures the username and password -->
-    <form @submit.prevent="login" class="bg-white p-4 rounded shadow-sm" style="max-width: 500px;">
+
+    <!-- Login form -->
+    <form @submit.prevent="login" class="bg-white p-4 rounded shadow-sm mb-5" style="max-width: 500px;">
       <div class="mb-3">
-      <!-- Input for the username  -->
         <label for="username" class="form-label">Username</label>
         <input v-model="username" type="text" class="form-control form-control-lg bg-warning-subtle" id="username" required>
       </div>
-      <!-- Input for the password  -->
       <div class="mb-4">
         <label for="password" class="form-label">Password</label>
         <input v-model="password" type="password" class="form-control form-control-lg bg-warning-subtle" id="password" required>
       </div>
       <button type="submit" class="btn btn-primary btn-lg">Log In</button>
-      <!-- Displays message if error  -->
       <div v-if="error" class="mt-3 alert alert-danger">
         {{ error }}
       </div>
     </form>
-  </div>
 
     <!-- Dogs Table Section -->
     <div class="mt-5">
@@ -76,6 +73,14 @@
           </tbody>
         </table>
       </div>
+
+      <!-- No dogs message -->
+      <div v-else class="alert alert-info">
+        No dogs registered yet.
+      </div>
+    </div>
+  </div>
+
   <script>
     const { createApp } = Vue;
 
@@ -83,9 +88,11 @@
       data() {
         return {
           message: 'Welcome to the Dog Walking Service!',
-          username: '', // This stores the username data
-          password: '', // This stores the password data
-          error: '' // Error message for a failed login
+          username: '',
+          password: '',
+          error: '',
+          dogs: [],
+          loadingDogs: true
         };
       },
       methods: {
@@ -100,23 +107,67 @@
           };
 
           const user = users[this.username];
-          // Checks if the user and the password exists  & matches
           if (!user || user.password !== this.password) {
             this.error = 'Invalid username or password.';
             return;
           }
 
-          // Store the login session in sessionStorage
           sessionStorage.setItem('username', this.username);
           sessionStorage.setItem('role', user.role);
 
-          // This redirects the user to a different page based on their account's role
           if (user.role === 'owner') {
             window.location.href = 'owner-dashboard.html';
           } else if (user.role === 'walker') {
             window.location.href = 'walker-dashboard.html';
           }
+        },
+
+        async loadDogs() {
+          try {
+            // Fetch all dogs from the API
+            const response = await fetch('/api/dogs');
+            if (!response.ok) {
+              throw new Error('Failed to fetch dogs');
+            }
+
+            const dogsData = await response.json();
+
+            // Fetch a random dog image for each dog
+            const dogsWithImages = await Promise.all(
+              dogsData.map(async (dog) => {
+                try {
+                  const imageResponse = await fetch('https://dog.ceo/api/breeds/image/random');
+                  const imageData = await imageResponse.json();
+
+                  if (imageData.status === 'success') {
+                    dog.imageUrl = imageData.message;
+                  }
+                } catch (err) {
+                  console.error('Error fetching dog image:', err);
+                  dog.imageUrl = null;
+                }
+                return dog;
+              })
+            );
+
+            this.dogs = dogsWithImages;
+          } catch (err) {
+            console.error('Error loading dogs:', err);
+            this.error = 'Failed to load dogs';
+          } finally {
+            this.loadingDogs = false;
+          }
+        },
+
+        handleImageError(event) {
+          // Fallback image if the dog image fails to load
+          event.target.src = 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="80" height="80"%3E%3Crect width="80" height="80" fill="%23ddd"/%3E%3Ctext x="50%25" y="50%25" text-anchor="middle" dy=".3em" fill="%23999"%3E🐕%3C/text%3E%3C/svg%3E';
         }
+      },
+
+      mounted() {
+        // Load dogs when the page loads
+        this.loadDogs();
       }
     }).mount('#app');
   </script>
