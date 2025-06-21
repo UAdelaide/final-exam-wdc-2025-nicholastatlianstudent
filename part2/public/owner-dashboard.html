@@ -106,11 +106,11 @@
               throw new Error(`Fetch failed: ${res.status} ${res.statusText}`);
             }
             dogs.value = await res.json();
-            } catch (err) {
-    console.error(err); // ✅ Log the actual error
-    error.value = "Failed to load dogs list.";
-  }
-}
+          } catch (err) {
+            console.error(err); // ✅ Log the actual error
+            error.value = "Failed to load dogs list.";
+          }
+        }
 
         async function submitWalkRequest() {
           try {
