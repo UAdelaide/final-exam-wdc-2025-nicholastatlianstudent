@@ -93,10 +93,10 @@
 
         async function loadDogs() {
           const username = sessionStorage.getItem("username");
-  if (!username) {
-    console.error("No username in sessionStorage");
-    return;
-  }
+          if (!username) {
+            console.error("No username in sessionStorage");
+            return;
+          }
 
   console.log("Fetching dogs for:", username); // ✅ Debug line
 
