@@ -131,7 +131,16 @@
               duration_minutes: '',
               location: ''
             };
-            
+            async function loadWalks() {
+            try {
+              const res = await fetch('/api/walks');
+              if (!res.ok) throw new Error("Failed to fetch walks");
+                walks.value = await res.json();
+  } catch (err) {
+    console.error(err);
+    error.value = 'Failed to load walk requests';
+  }
+}
 
         onMounted(() => {
           loadWalks();
