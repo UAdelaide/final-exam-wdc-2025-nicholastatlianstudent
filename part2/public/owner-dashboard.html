@@ -27,13 +27,11 @@
             <label for="dogID" class="form-label">Select your Dog</label>
             <select id="dogID" v-model="form.dog_id" class="form-select" required>
               <option disabled value="">-- Choose a dog --</option>
-              <option v-for="dog in dogs" :key="dog.dog_id" :value="dog.dog_id">
-                {{ dog.name }} ({{ dog.size }})
+              <option v-for="dog in dogs" :key="dog.id" :value="dog.id">
+                {{ dog.name }}
               </option>
             </select>
-            <div v-if="dogs.length === 0" class="text-muted mt-2">
-              No dogs registered yet. Please add a dog first.
-            </div>
+
           </div>
           <div class="mb-3">
             <label class="form-label">Requested Date & Time</label>
@@ -41,179 +39,127 @@
           </div>
           <div class="mb-3">
             <label class="form-label">Duration (minutes)</label>
-            <input v-model="form.duration_minutes" type="number" min="15" max="180" class="form-control" required>
+            <input v-model="form.duration_minutes" type="number" class="form-control" required>
           </div>
           <div class="mb-3">
             <label class="form-label">Location</label>
-            <input v-model="form.location" type="text" class="form-control" placeholder="e.g., Central Park" required>
+            <input v-model="form.location" type="text" class="form-control" required>
           </div>
-          <button type="submit" class="btn btn-success" :disabled="dogs.length === 0">Create Walk Request</button>
+          <button type="submit" class="btn btn-success">Create Walk</button>
         </form>
       </div>
     </div>
 
     <!-- Success or error messages -->
-    <div v-if="message" class="alert alert-success alert-dismissible fade show">
-      {{ message }}
-      <button type="button" class="btn-close" @click="message = ''"></button>
-    </div>
-    <div v-if="error" class="alert alert-danger alert-dismissible fade show">
-      {{ error }}
-      <button type="button" class="btn-close" @click="error = ''"></button>
-    </div>
-
-    <!-- Loading spinner -->
-    <div v-if="loading" class="text-center my-4">
-      <div class="spinner-border text-primary" role="status">
-        <span class="visually-hidden">Loading...</span>
-      </div>
-    </div>
+    <div v-if="message" class="alert alert-info">{{ message }}</div>
+    <div v-if="error" class="alert alert-danger">{{ error }}</div>
 
     <!-- List of walk requests -->
     <h2 class="mb-3">My Walk Requests</h2>
     <div class="row" v-if="walks.length > 0">
       <div class="col-md-6 mb-4" v-for="walk in walks" :key="walk.request_id">
-        <div class="card" :class="{'border-success': walk.status === 'completed', 'border-warning': walk.status === 'accepted', 'border-danger': walk.status === 'cancelled'}">
+        <div class="card">
           <div class="card-body">
             <h5 class="card-title">Request #{{ walk.request_id }}</h5>
             <p class="card-text">
               <strong>Dog:</strong> {{ walk.dog_name }} ({{ walk.size }})<br>
-              <strong>Date:</strong> {{ formatDate(walk.requested_time) }}<br>
+              <strong>Date:</strong> {{ new Date(walk.requested_time).toLocaleString() }}<br>
               <strong>Duration:</strong> {{ walk.duration_minutes }} minutes<br>
               <strong>Location:</strong> {{ walk.location }}<br>
-              <strong>Status:</strong>
-              <span class="badge" :class="{
-                'bg-secondary': walk.status === 'open',
-                'bg-warning': walk.status === 'accepted',
-                'bg-success': walk.status === 'completed',
-                'bg-danger': walk.status === 'cancelled'
-              }">{{ walk.status }}</span>
+              <strong>Status:</strong> {{ walk.status }}
             </p>
           </div>
         </div>
       </div>
     </div>
-    <p v-else-if="!loading">No walk requests yet.</p>
+    <p v-else>No walk requests yet.</p>
   </div>
 
   <script>
-  const { createApp, ref, onMounted } = Vue;
+    const { createApp, ref, onMounted } = Vue;
 
-  createApp({
-    setup() {
-      const form = ref({
-        dog_id: '',
-        requested_time: '',
-        duration_minutes: 30,
-        location: ''
-      });
-
-      const walks = ref([]);
-      const message = ref('');
-      const error = ref('');
-      const dogs = ref([]);
-      const loading = ref(true);
-
-      async function loadDogs() {
-        const username = sessionStorage.getItem("username");
-        if (!username) {
-          error.value = "Please log in to continue.";
-          window.location.href = '/login';
-          return;
-        }
-
-        try {
-          const res = await fetch(`/api/users/${username}/dogs`);
-          if (!res.ok) {
-            throw new Error(`Failed to load dogs: ${res.status}`);
-          }
-          const data = await res.json();
-          dogs.value = data;
-          console.log("Dogs loaded:", dogs.value);
-        } catch (err) {
-          console.error("Error loading dogs:", err);
-          error.value = "Failed to load your dogs. Please refresh the page.";
-        }
-      }
-
-      async function loadWalks() {
-        try {
-          const username = sessionStorage.getItem("username");
-          if (!username) return;
-
-          const res = await fetch(`/api/users/${username}/walks`);
-          if (!res.ok) throw new Error("Failed to fetch walks");
-          walks.value = await res.json();
-        } catch (err) {
-          console.error("Error loading walks:", err);
-          error.value = 'Failed to load walk requests';
-        } finally {
-          loading.value = false;
-        }
-      }
-
-      async function submitWalkRequest() {
-        message.value = '';
-        error.value = '';
-
-        try {
-          const res = await fetch('/api/walks', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(form.value)
-          });
-          const result = await res.json();
-
-          if (!res.ok) throw new Error(result.error || 'Error submitting walk request');
-
-          message.value = 'Walk request created successfully!';
-          form.value = {
-            dog_id: '',
-            requested_time: '',
-            duration_minutes: 30,
-            location: ''
-          };
-          await loadWalks();
-        } catch (err) {
-          error.value = err.message;
-        }
-      }
-
-      function formatDate(dateString) {
-        return new Date(dateString).toLocaleString('en-US', {
-          year: 'numeric',
-          month: 'short',
-          day: 'numeric',
-          hour: '2-digit',
-          minute: '2-digit'
+    createApp({
+      setup() {
+        const form = ref({
+          dog_id: '',
+          requested_time: '',
+          duration_minutes: '',
+          location: ''
         });
+
+        const walks = ref([]);
+        const message = ref('');
+        const error = ref('');
+
+        async function loadDogs() {
+          const username = sessionStorage.getItem("username");
+          if (!username) {
+            console.error("No username in sessionStorage");
+            return;
+          }
+
+          console.log("Fetching dogs for:", username); // ✅ Debug line
+
+          try {
+            const res = await fetch(`/users/${username}/dogs`);
+            if (!res.ok) {
+              throw new Error(`Fetch failed: ${res.status} ${res.statusText}`);
+            }
+            dogs.value = await res.json();
+          } catch (err) {
+            console.error(err); // ✅ Log the actual error
+            error.value = "Failed to load dogs list.";
+          }
+        }
+
+        async function submitWalkRequest() {
+          try {
+            const res = await fetch('/api/walks', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify(form.value)
+            });
+            const result = await res.json();
+
+            if (!res.ok) throw new Error(result.error || 'Error submitting walk request');
+
+            message.value = result.message;
+            error.value = '';
+            form.value = {
+              dog_id: '',
+              requested_time: '',
+              duration_minutes: '',
+              location: ''
+            };
+            async function loadWalks() {
+              try {
+                const res = await fetch('/api/walks');
+                if (!res.ok) throw new Error("Failed to fetch walks");
+                walks.value = await res.json();
+              } catch (err) {
+                console.error(err);
+                error.value = 'Failed to load walk requests';
+              }
+            }
+
+        onMounted(() => {
+          loadWalks();
+          loadDogs();
+        });
+
+        return {
+          form,
+          walks,
+          message,
+          error,
+          dogs,
+          submitWalkRequest
+        };
       }
-
-      onMounted(async () => {
-        console.log("Vue app mounted");
-        await loadDogs();
-        await loadWalks();
-      });
-
-      return {
-        form,
-        walks,
-        message,
-        error,
-        dogs,
-        loading,
-        submitWalkRequest,
-        formatDate
-      };
-    }
-  }).mount('#app');
-
-  // Logout function
-  function logout() {
-    sessionStorage.clear();
-    window.location.href = '/login';
-  }
+    }).mount('#app');
   </script>
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="javascripts/page.js"></script>
+
 </body>
 </html>
