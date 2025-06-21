@@ -137,16 +137,6 @@
   </script>
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
   <script src="javascripts/page.js"></script>
-  <script>
-  window.onload = function () {
-    const role = sessionStorage.getItem("role");
-    if (role !== "owner") {
-      alert("Access denied. Owners only.");
-      window.location.href = "index.html";
-    } else {
-      populateDogsDropdown(); // populate dog names
-    }
-  };
-</script>
+
 </body>
 </html>
