@@ -112,7 +112,7 @@
           } catch (err) {
             error.value = "Failed to load dogs list.";
           }
-}
+        }
 
         async function submitWalkRequest() {
           try {
@@ -142,6 +142,7 @@
 
         onMounted(() => {
           loadWalks();
+          loadDogs
         });
 
         return {
