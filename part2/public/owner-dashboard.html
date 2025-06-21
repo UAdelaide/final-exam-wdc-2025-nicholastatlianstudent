@@ -102,16 +102,16 @@
 
         const dogs = ref([]);
 
-async function loadDogs() {
-  const username = sessionStorage.getItem("username");
-  if (!username) return;
+        async function loadDogs() {
+          const username = sessionStorage.getItem("username");
+          if (!username) return;
 
-  try {
-    const res = await fetch(`/users/${username}/dogs`);
-    dogs.value = await res.json();
-  } catch (err) {
-    error.value = "Failed to load dogs list.";
-  }
+        try {
+        const res = await fetch(`/users/${username}/dogs`);
+        dogs.value = await res.json();
+        } catch (err) {
+        error.value = "Failed to load dogs list.";
+        }
 }
 
         async function submitWalkRequest() {
