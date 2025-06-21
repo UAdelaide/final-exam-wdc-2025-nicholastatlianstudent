@@ -91,28 +91,26 @@
         const message = ref('');
         const error = ref('');
 
-        async function loadWalks() {
-          try {
-            const res = await fetch('/api/walks');
-            walks.value = await res.json();
-          } catch (err) {
-            error.value = 'Failed to load walk requests';
-          }
-        }
-
-        const dogs = ref([]);
-
         async function loadDogs() {
           const username = sessionStorage.getItem("username");
-          if (!username) return;
+  if (!username) {
+    console.error("No username in sessionStorage");
+    return;
+  }
 
-          try {
-            const res = await fetch(`/users/${username}/dogs`);
-            dogs.value = await res.json();
-          } catch (err) {
-            error.value = "Failed to load dogs list.";
-          }
-        }
+  console.log("Fetching dogs for:", username); // ✅ Debug line
+
+  try {
+    const res = await fetch(`/users/${username}/dogs`);
+    if (!res.ok) {
+      throw new Error(`Fetch failed: ${res.status} ${res.statusText}`);
+    }
+    dogs.value = await res.json();
+  } catch (err) {
+    console.error(err); // ✅ Log the actual error
+    error.value = "Failed to load dogs list.";
+  }
+}
 
         async function submitWalkRequest() {
           try {
