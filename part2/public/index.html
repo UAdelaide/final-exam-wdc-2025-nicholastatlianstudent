@@ -119,6 +119,44 @@
           }
         }
       }
+
+      async loadDogs() {
+          try {
+            // Fetch all dogs from the API
+            const response = await fetch('/api/dogs');
+            if (!response.ok) {
+              throw new Error('Failed to fetch dogs');
+            }
+
+            const dogsData = await response.json();
+
+            // Fetch a random dog image for each dog
+            const dogsWithImages = await Promise.all(
+              dogsData.map(async (dog) => {
+                try {
+                  const imageResponse = await fetch('https://dog.ceo/api/breeds/image/random');
+                  const imageData = await imageResponse.json();
+
+                  if (imageData.status === 'success') {
+                    dog.imageUrl = imageData.message;
+                  }
+                } catch (err) {
+                  console.error('Error fetching dog image:', err);
+                  dog.imageUrl = null;
+                }
+                return dog;
+              })
+            );
+
+            this.dogs = dogsWithImages;
+          } catch (err) {
+            console.error('Error loading dogs:', err);
+            this.error = 'Failed to load dogs';
+          } finally {
+            this.loadingDogs = false;
+          }
+        },
+
     }).mount('#app');
   </script>
 
