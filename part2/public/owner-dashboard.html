@@ -15,7 +15,6 @@
 
   <div id="app" class="container py-4">
     <h1 class="mb-4 text-primary">Owner Dashboard</h1>
-    <h5 class="text-muted mb-4">Welcome, {{ username }}!</h5>
 
     <!-- Walk request form -->
     <div class="card mb-4">
@@ -25,19 +24,8 @@
       <div class="card-body">
         <form @submit.prevent="submitWalkRequest">
           <div class="mb-3">
-            <label for="dogID" class="form-label">Select your Dog</label>
-            <select id="dogID" v-model="form.dog_id" class="form-select" required>
-              <option disabled value="">-- Choose a dog --</option>
-              <option v-for="dog in dogs" :key="dog.dog_id" :value="dog.dog_id">
-                {{ dog.name }} ({{ dog.size }})
-              </option>
-            </select>
-            <div v-if="loadingDogs" class="text-muted mt-2">
-              <span class="spinner-border spinner-border-sm me-2"></span>Loading your dogs...
-            </div>
-            <div v-if="!loadingDogs && dogs.length === 0" class="alert alert-info mt-2">
-              You haven't registered any dogs yet. Please add a dog first.
-            </div>
+            <label class="form-label">Dog ID</label>
+            <input v-model="form.dog_id" type="number" class="form-control" required>
           </div>
           <div class="mb-3">
             <label class="form-label">Requested Date & Time</label>
@@ -45,26 +33,20 @@
           </div>
           <div class="mb-3">
             <label class="form-label">Duration (minutes)</label>
-            <input v-model="form.duration_minutes" type="number" min="15" max="180" class="form-control" required>
+            <input v-model="form.duration_minutes" type="number" class="form-control" required>
           </div>
           <div class="mb-3">
             <label class="form-label">Location</label>
-            <input v-model="form.location" type="text" class="form-control" placeholder="e.g., Central Park" required>
+            <input v-model="form.location" type="text" class="form-control" required>
           </div>
-          <button type="submit" class="btn btn-success" :disabled="dogs.length === 0">Create Walk Request</button>
+          <button type="submit" class="btn btn-success">Create Walk</button>
         </form>
       </div>
     </div>
 
     <!-- Success or error messages -->
-    <div v-if="message" class="alert alert-success alert-dismissible fade show">
-      {{ message }}
-      <button type="button" class="btn-close" @click="message = ''"></button>
-    </div>
-    <div v-if="error" class="alert alert-danger alert-dismissible fade show">
-      {{ error }}
-      <button type="button" class="btn-close" @click="error = ''"></button>
-    </div>
+    <div v-if="message" class="alert alert-info">{{ message }}</div>
+    <div v-if="error" class="alert alert-danger">{{ error }}</div>
 
     <!-- List of walk requests -->
     <h2 class="mb-3">My Walk Requests</h2>
@@ -74,17 +56,11 @@
           <div class="card-body">
             <h5 class="card-title">Request #{{ walk.request_id }}</h5>
             <p class="card-text">
-              <strong>Dog:</strong> {{ getSelectedDogInfo(walk.dog_id) }}<br>
+              <strong>Dog:</strong> {{ walk.dog_name }} ({{ walk.size }})<br>
               <strong>Date:</strong> {{ new Date(walk.requested_time).toLocaleString() }}<br>
               <strong>Duration:</strong> {{ walk.duration_minutes }} minutes<br>
               <strong>Location:</strong> {{ walk.location }}<br>
-              <strong>Status:</strong>
-              <span class="badge" :class="{
-                'bg-secondary': walk.status === 'open',
-                'bg-warning': walk.status === 'accepted',
-                'bg-success': walk.status === 'completed',
-                'bg-danger': walk.status === 'cancelled'
-              }">{{ walk.status }}</span>
+              <strong>Status:</strong> {{ walk.status }}
             </p>
           </div>
         </div>
@@ -101,138 +77,64 @@
         const form = ref({
           dog_id: '',
           requested_time: '',
-          duration_minutes: 30,
+          duration_minutes: '',
           location: ''
         });
 
         const walks = ref([]);
-        const dogs = ref([]);
         const message = ref('');
         const error = ref('');
-        const loadingDogs = ref(false);
-        const username = ref(sessionStorage.getItem('username') || '');
-
-        async function loadDogs() {
-          loadingDogs.value = true;
-          error.value = '';
-
-          try {
-            const ownerUsername = sessionStorage.getItem("username");
-
-            if (!ownerUsername) {
-              error.value = "Please log in to continue.";
-              window.location.href = '/login';
-              return;
-            }
-
-            const res = await fetch(`/api/dogs?owner=${ownerUsername}`);
-
-            if (!res.ok) {
-              const errorData = await res.json();
-              throw new Error(errorData.error || `Failed to fetch dogs: ${res.status}`);
-            }
-
-            const data = await res.json();
-            dogs.value = data;
-            console.log(`Loaded ${data.length} dogs for ${ownerUsername}`);
-
-          } catch (err) {
-            console.error('Error loading dogs:', err);
-            error.value = `Failed to load your dogs: ${err.message}`;
-          } finally {
-            loadingDogs.value = false;
-          }
-        }
 
         async function loadWalks() {
           try {
             const res = await fetch('/api/walks');
-            if (res.ok) {
-              walks.value = await res.json();
-            }
+            walks.value = await res.json();
           } catch (err) {
-            console.error('Error loading walks:', err);
+            error.value = 'Failed to load walk requests';
           }
         }
 
         async function submitWalkRequest() {
-          error.value = '';
-          message.value = '';
-
           try {
-            const selectedDog = dogs.value.find(dog => dog.dog_id === form.value.dog_id);
-            if (!selectedDog) {
-              error.value = 'Please select a dog';
-              return;
-            }
-
             const res = await fetch('/api/walks', {
               method: 'POST',
               headers: { 'Content-Type': 'application/json' },
               body: JSON.stringify(form.value)
             });
-
             const result = await res.json();
 
-            if (!res.ok) {
-              throw new Error(result.error || 'Error submitting walk request');
-            }
+            if (!res.ok) throw new Error(result.error || 'Error submitting walk request');
 
-            message.value = 'Walk request created successfully!';
-
-            // Reset form
+            message.value = result.message;
+            error.value = '';
             form.value = {
               dog_id: '',
               requested_time: '',
-              duration_minutes: 30,
+              duration_minutes: '',
               location: ''
             };
-
-            // Reload walks
-            await loadWalks();
-
+            loadWalks();
           } catch (err) {
             error.value = err.message;
+            message.value = '';
           }
-        }
-
-        function getSelectedDogInfo(dogId) {
-          const dog = dogs.value.find(d => d.dog_id === dogId);
-          return dog ? `${dog.name} (${dog.size})` : `Dog #${dogId}`;
         }
 
         onMounted(() => {
-          const role = sessionStorage.getItem("role");
-          if (role !== "owner") {
-            alert("Access denied. Owners only.");
-            window.location.href = "index.html";
-            return;
-          }
-
-          loadDogs();
           loadWalks();
         });
 
         return {
           form,
           walks,
-          dogs,
           message,
           error,
-          loadingDogs,
-          username,
-          submitWalkRequest,
-          getSelectedDogInfo
+          submitWalkRequest
         };
       }
     }).mount('#app');
-
-    function logout() {
-      sessionStorage.clear();
-      window.location.href = '/login';
-    }
   </script>
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-  <script src="javascripts/page.js"></script>
+  <script src="page.js"></script>
 </body>
 </html>
