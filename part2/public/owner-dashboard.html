@@ -98,11 +98,11 @@
             return;
           }
 
-  console.log("Fetching dogs for:", username); // ✅ Debug line
+          console.log("Fetching dogs for:", username); // ✅ Debug line
 
-  try {
-    const res = await fetch(`/users/${username}/dogs`);
-    if (!res.ok) {
+          try {
+            const res = await fetch(`/users/${username}/dogs`);
+            if (!res.ok) {
       throw new Error(`Fetch failed: ${res.status} ${res.statusText}`);
     }
     dogs.value = await res.json();
