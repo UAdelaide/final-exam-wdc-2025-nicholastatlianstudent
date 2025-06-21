@@ -30,7 +30,7 @@
               <option v-for="dog in dogs" :key="dog.id" :value="dog.id">
                 {{ dog.name }}
               </option>
-            </select>
+          </select>
 
           </div>
           <div class="mb-3">
@@ -91,24 +91,12 @@
         const message = ref('');
         const error = ref('');
 
-        async function loadDogs() {
-          const username = sessionStorage.getItem("username");
-          if (!username) {
-            console.error("No username in sessionStorage");
-            return;
-          }
-
-          console.log("Fetching dogs for:", username); // ✅ Debug line
-
+        async function loadWalks() {
           try {
-            const res = await fetch(`/users/${username}/dogs`);
-            if (!res.ok) {
-              throw new Error(`Fetch failed: ${res.status} ${res.statusText}`);
-            }
-            dogs.value = await res.json();
+            const res = await fetch('/api/walks');
+            walks.value = await res.json();
           } catch (err) {
-            console.error(err); // ✅ Log the actual error
-            error.value = "Failed to load dogs list.";
+            error.value = 'Failed to load walk requests';
           }
         }
 
@@ -131,20 +119,15 @@
               duration_minutes: '',
               location: ''
             };
-            async function loadWalks() {
-              try {
-                const res = await fetch('/api/walks');
-                if (!res.ok) throw new Error("Failed to fetch walks");
-                walks.value = await res.json();
-              } catch (err) {
-                console.error(err);
-                error.value = 'Failed to load walk requests';
-            }
-            }
+            loadWalks();
+          } catch (err) {
+            error.value = err.message;
+            message.value = '';
+          }
+        }
 
         onMounted(() => {
           loadWalks();
-          loadDogs();
         });
 
         return {
@@ -152,7 +135,6 @@
           walks,
           message,
           error,
-          dogs,
           submitWalkRequest
         };
       }
@@ -160,6 +142,16 @@
   </script>
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
   <script src="javascripts/page.js"></script>
-
+  <script>
+  window.onload = function () {
+    const role = sessionStorage.getItem("role");
+    if (role !== "owner") {
+      alert("Access denied. Owners only.");
+      window.location.href = "index.html";
+    } else {
+      populateDogsDropdown(); // ✅ populate dog names
+    }
+  };
+</script>
 </body>
 </html>
