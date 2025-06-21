@@ -15,35 +15,30 @@ const userRoutes = require('./routes/userRoutes');
 app.use('/api/walks', walkRoutes);
 app.use('/api/users', userRoutes);
 
-// Get dogs for a specific owner
+// Get dogs for the authenticated owner
 app.get('/api/dogs', async (req, res) => {
   try {
-    const username = req.query.owner;
+    // Get user_id from session (set during login)
+    const userId = req.session.user_id;
 
-    if (!username) {
-      return res.status(400).json({ error: 'Owner username required' });
+    if (!userId) {
+      return res.status(401).json({ error: 'Not authenticated' });
     }
 
-    // MySQL query using your database structure
-    const query = `
-      SELECT d.dog_id, d.name, d.size
-      FROM Dogs d
-      INNER JOIN Users u ON d.owner_id = u.user_id
-      WHERE u.username = ? AND u.role = 'owner'
-    `;
+    // Single query to get all dogs for this owner
+    const query = 'SELECT dog_id, name, size FROM Dogs WHERE owner_id = ?';
 
-    db.query(query, [username], (error, results) => {
+    db.query(query, [userId], (error, results) => {
       if (error) {
         console.error('Database error:', error);
         return res.status(500).json({ error: 'Database error' });
       }
-
       res.json(results);
     });
 
   } catch (error) {
-    console.error('Error fetching dogs:', error);
-    res.status(500).json({ error: 'Failed to fetch dogs' });
+    console.error('Error:', error);
+    res.status(500).json({ error: 'Server error' });
   }
 });
 
