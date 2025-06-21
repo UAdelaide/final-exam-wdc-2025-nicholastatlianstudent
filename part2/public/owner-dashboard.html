@@ -106,10 +106,10 @@
           const username = sessionStorage.getItem("username");
           if (!username) return;
 
-        try {
-        const res = await fetch(`/users/${username}/dogs`);
-        dogs.value = await res.json();
-        } catch (err) {
+          try {
+            const res = await fetch(`/users/${username}/dogs`);
+            dogs.value = await res.json();
+          } catch (err) {
         error.value = "Failed to load dogs list.";
         }
 }
