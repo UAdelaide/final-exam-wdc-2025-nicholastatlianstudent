@@ -103,10 +103,10 @@
           try {
             const res = await fetch(`/users/${username}/dogs`);
             if (!res.ok) {
-      throw new Error(`Fetch failed: ${res.status} ${res.statusText}`);
-    }
-    dogs.value = await res.json();
-  } catch (err) {
+              throw new Error(`Fetch failed: ${res.status} ${res.statusText}`);
+            }
+            dogs.value = await res.json();
+            } catch (err) {
     console.error(err); // ✅ Log the actual error
     error.value = "Failed to load dogs list.";
   }
